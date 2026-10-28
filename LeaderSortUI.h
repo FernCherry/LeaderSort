@@ -46,9 +46,10 @@ class LeaderSortUI {
 	int selected_stat;
 	int scroll_offset;
 
-	vector<PlayerStats> xp_sorted;
-	vector<PlayerStats> wins_sorted;
-	vector<PlayerStats> kd_sorted;
+	vector<PlayerStats> database;
+	vector<PlayerStats*> xp_sorted;
+	vector<PlayerStats*> wins_sorted;
+	vector<PlayerStats*> kd_sorted;
 	
 	vector<StatRow> stat_rows;
 	StatRow user_row;
