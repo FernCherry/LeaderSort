@@ -222,10 +222,14 @@ LeaderSortUI::LeaderSortUI(Vector2f panel_center_, Texture elements_texture_, Fo
 }
 void LeaderSortUI::Refresh() {
 	if (merge_sort) {
-
+		mergeSort(xp_sorted);
+		mergeSort(wins_sorted);
+		mergeSort(kd_sorted);
 	}
 	else { // quick_sort 
-
+		quickSort(xp_sorted);
+		quickSort(wins_sorted);
+		quickSort(kd_sorted);
 	}
 }
 
