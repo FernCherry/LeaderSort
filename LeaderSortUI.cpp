@@ -1,4 +1,8 @@
 #include "LeaderSortUI.h"
+#include "algorithms.h"
+#include <algorithm>
+#include <random>
+#include <chrono>
 
 void LeaderSortUI::Render(RenderWindow& window) {
 	window.draw(panel);
@@ -6,10 +10,10 @@ void LeaderSortUI::Render(RenderWindow& window) {
 	if (not dynamic_stats) {
 		element_sprites[2].setPosition(element_rects[12].position); window.draw(element_sprites[2]);
 	}
-	if (not merge_sort) { 
+	if (not merge_sort) {
 		element_sprites[2].setPosition(element_rects[13].position); window.draw(element_sprites[2]);
 	}
-	else if (not quick_sort) { 
+	if (not quick_sort) {
 		element_sprites[2].setPosition(element_rects[14].position); window.draw(element_sprites[2]);
 	}
 
@@ -39,43 +43,38 @@ void LeaderSortUI::Render(RenderWindow& window) {
 		stat_row.Render(window);
 	}
 	user_row.Render(window);
-	
 }
+
 void LeaderSortUI::ScrollStats(int scroll_delta) {
-	vector<PlayerStats>* selected_container;
+	vector<PlayerStats*>* selected_container = nullptr;
 
 	switch (selected_stat) {
 		case 0: selected_container = &xp_sorted; break;
 		case 1: selected_container = &wins_sorted; break;
 		case 2: selected_container = &kd_sorted; break;
+		default: return;
 	}
 
-	scroll_offset = clamp(scroll_offset - scroll_delta, 0, (int)selected_container->size() - 9);
+	int size = (int)selected_container->size();
+	scroll_offset = clamp(scroll_offset - scroll_delta, 0, max(0, size - 9));
 
 	for (int i = 0; i < 9; i++) {
-		StatRow& stat_row = stat_rows[i];
 		int ranking = scroll_offset + i;
-		if (ranking > selected_container->size()) { continue; }
+		if (ranking >= size) { continue; }
 
-		stat_row.Update(
-			ranking + 1,
-			selected_container->at(ranking).username,
-			selected_container->at(ranking).xp,
-			selected_container->at(ranking).wins,
-			selected_container->at(ranking).kd
-		);
+		PlayerStats* p = selected_container->at(ranking);
+		stat_rows[i].Update(ranking + 1, p->username, p->xp, p->wins, p->kd);
 	}
-
-
 }
+
 void LeaderSortUI::Update(Vector2i mouse_position, bool clicked, int scroll_delta) {
 	if (scroll_delta != 0) { ScrollStats(scroll_delta); }
-	
+
 	Vector2f screen_position(mouse_position);
 	highlight_index = -1;
 	for (int i = 0; i < 16; i++) {
-		FloatRect& rect = element_rects[i];
-		
+		const FloatRect& rect = element_rects[i];
+
 		if (rect.contains(screen_position)) {
 			highlight_index = i;
 
@@ -84,26 +83,32 @@ void LeaderSortUI::Update(Vector2i mouse_position, bool clicked, int scroll_delt
 					case 0: case 1: case 2: selected_stat = highlight_index; ScrollStats(0); break;
 
 					//case 3: case 4: case 5: case 6: case 7: case 8: case 9: case 10: case 11: break; // selected profiles
-					
+
 					case 12: dynamic_stats = not dynamic_stats; break;
 					case 13: merge_sort = not merge_sort; quick_sort = not merge_sort; break;
 					case 14: quick_sort = not quick_sort; merge_sort = not quick_sort; break;
 
 					case 15: Refresh(); break;
 				}
-
 			}
 		}
-
 	}
 
 	if (dynamic_stats) {
-		// changes random player stats as if they are playing in real time, it could show up after refresh
+		// players keep playing: stats only ever increase, rows catch up on Refresh
+		static mt19937 rng(random_device{}());
+		for (int n = 0; n < 50; n++) {
+			PlayerStats& p = database[rng() % database.size()];
+			p.xp += 1 + rng() % 20;                   // +1 to +20 xp
+			if (rng() % 3 == 0) { p.wins += 1; }      // a win roughly every third update
+			p.kd += (rng() % 5) / 100.f;              // +0.00 to +0.04
+		}
 	}
 }
+
 LeaderSortUI::LeaderSortUI(Vector2f panel_center_, Texture elements_texture_, Font pixeloid_font_) :
 	panel_center(panel_center_), elements_texture(elements_texture_), panel(elements_texture), pixeloid_font(pixeloid_font_),
-	user_row( 
+	user_row(
 		pixeloid_font, Vector2f(panel_center.x - 445.f, (panel_center.y - 314.f) + (51.f * 10) + 20.f),
 		77, "", 0, 0, 0.f
 	) {
@@ -130,11 +135,11 @@ LeaderSortUI::LeaderSortUI(Vector2f panel_center_, Texture elements_texture_, Fo
 		FloatRect(Vector2f(left_margin, top_margin + (51.f * 7)), Vector2f(890.f, 48.f)), // Row 8
 		FloatRect(Vector2f(left_margin, top_margin + (51.f * 8)), Vector2f(890.f, 48.f)), // Row 9
 
-		FloatRect(panel_center + Vector2f(-312.f, 258.f + 38.f * 0.f), Vector2f(72.f, 36.f)), // Dynamic Sort
-		FloatRect(panel_center + Vector2f(-312.f, 258.f + 38.f * 1.f), Vector2f(72.f, 36.f)), // Quick Sort
-		FloatRect(panel_center + Vector2f(-312.f, 258.f + 38.f * 2.f), Vector2f(72.f, 36.f)), // Merge Sort
+		FloatRect(panel_center + Vector2f(-312.f, 258.f + 38.f * 0.f), Vector2f(72.f, 36.f)), // 12: Dynamic Stats
+		FloatRect(panel_center + Vector2f(-312.f, 258.f + 38.f * 1.f), Vector2f(72.f, 36.f)), // 13: Merge Sort
+		FloatRect(panel_center + Vector2f(-312.f, 258.f + 38.f * 2.f), Vector2f(72.f, 36.f)), // 14: Quick Sort
 
-		FloatRect(panel_center + Vector2f(-47.f, 258.f), Vector2f(112.f, 112.f)), // Refresh
+		FloatRect(panel_center + Vector2f(-47.f, 258.f), Vector2f(112.f, 112.f)), // 15: Refresh
 	};
 
 	element_sprites = {
@@ -146,8 +151,8 @@ LeaderSortUI::LeaderSortUI(Vector2f panel_center_, Texture elements_texture_, Fo
 		Sprite(elements_texture)  // 5 Refresh Highlight
 	};
 
-	element_sprites[0].setTextureRect(IntRect(Vector2i(899, 232), Vector2i(64, 120))); 
-	element_sprites[0].setOrigin(Vector2f(0.f, 120.f)); 
+	element_sprites[0].setTextureRect(IntRect(Vector2i(899, 232), Vector2i(64, 120)));
+	element_sprites[0].setOrigin(Vector2f(0.f, 120.f));
 	element_sprites[0].rotate(degrees(90));
 	element_sprites[1].setTextureRect(IntRect(Vector2i(899, 109), Vector2i(64, 120)));
 	element_sprites[1].setOrigin(Vector2f(0.f, 120.f));
@@ -166,31 +171,36 @@ LeaderSortUI::LeaderSortUI(Vector2f panel_center_, Texture elements_texture_, Fo
 	scroll_offset = 0;
 
 	// stuff from other files
+	// database owns the players; the sorted vectors only hold pointers into it
+	database.reserve(10000); // required: a reallocation would invalidate every pointer
 	for (int i = 0; i < 10000; i++) {
-		xp_sorted.push_back(PlayerStats(i + 1));
-		wins_sorted.push_back(PlayerStats(i + 101));
-		kd_sorted.push_back(PlayerStats(i + 10001));
+		database.push_back(PlayerStats(i + 1));
+	}
+	for (PlayerStats& p : database) {
+		xp_sorted.push_back(&p);
+		wins_sorted.push_back(&p);
+		kd_sorted.push_back(&p);
 	}
 
+	// 1 = xp, 2 = wins, 3 = kd
+	mergeSort(xp_sorted, 1);
+	mergeSort(wins_sorted, 2);
+	mergeSort(kd_sorted, 3);
+
 	for (int i = 0; i < 9; i++) {
+		PlayerStats* p = xp_sorted.at(i);
 		stat_rows.push_back(StatRow(
-			pixeloid_font, 
+			pixeloid_font,
 			element_rects.at(i + 3).position + Vector2f(0.f, 20.f),
 			i + 1,
-			xp_sorted.at(i).username, 
-			xp_sorted.at(i).xp, 
-			xp_sorted.at(i).wins,
-			xp_sorted.at(i).kd
+			p->username,
+			p->xp,
+			p->wins,
+			p->kd
 		));
 	}
-	user_row.Update(
-		15 + 1,
-		xp_sorted.at(15).username,
-		xp_sorted.at(15).xp,
-		xp_sorted.at(15).wins,
-		xp_sorted.at(15).kd,
-		true
-	);
+	PlayerStats* u = xp_sorted.at(15);
+	user_row.Update(15 + 1, u->username, u->xp, u->wins, u->kd, true);
 	// stuff from other files
 
 	panel_texts = {
@@ -205,7 +215,9 @@ LeaderSortUI::LeaderSortUI(Vector2f panel_center_, Texture elements_texture_, Fo
 		Text(pixeloid_font, "Dynamic Stats", 16),
 		Text(pixeloid_font, "Merge Sort", 16),
 		Text(pixeloid_font, "Quick Sort", 16),
-		Text(pixeloid_font, "REFRESH", 16)
+		Text(pixeloid_font, "REFRESH", 16),
+
+		Text(pixeloid_font, "Last sort: --", 16) // 10: sort timer
 	};
 	panel_texts[0].setPosition(element_rects.at(3).position + Vector2f(60.f,  -38.f)); user_row.CenterText(panel_texts[0]);
 	panel_texts[1].setPosition(element_rects.at(3).position + Vector2f(325.f, -38.f)); user_row.CenterText(panel_texts[1]);
@@ -219,18 +231,36 @@ LeaderSortUI::LeaderSortUI(Vector2f panel_center_, Texture elements_texture_, Fo
 	panel_texts[7].setPosition(panel_center + Vector2f(-230.f, 314.f - 10.f));
 	panel_texts[8].setPosition(panel_center + Vector2f(-230.f, 352.f - 10.f));
 	panel_texts[9].setPosition(panel_center + Vector2f(10.f, 314.f)); user_row.CenterText(panel_texts[9]);
+
+	panel_texts[10].setPosition(panel_center + Vector2f(120.f, 290.f)); // adjust to fit your panel art
 }
+
 void LeaderSortUI::Refresh() {
+	using clock = chrono::steady_clock;
+	auto ms = [](clock::time_point a, clock::time_point b) {
+		return chrono::duration<double, milli>(b - a).count();
+	};
+
+	string label;
 	if (merge_sort) {
-		mergeSort(xp_sorted);
-		mergeSort(wins_sorted);
-		mergeSort(kd_sorted);
+		auto t0 = clock::now();
+		mergeSort(xp_sorted, 1);
+		auto t1 = clock::now();
+		mergeSort(wins_sorted, 2);
+		auto t2 = clock::now();
+		mergeSort(kd_sorted, 3);
+		auto t3 = clock::now();
+
+		label = format("Merge sort: {:.2f} ms\nXP {:.2f} | Wins {:.2f} | KD {:.2f}",
+			ms(t0, t3), ms(t0, t1), ms(t1, t2), ms(t2, t3));
 	}
-	else { // quick_sort 
-		quickSort(xp_sorted);
-		quickSort(wins_sorted);
-		quickSort(kd_sorted);
+	else { // quick_sort: not implemented yet
+		label = "Quick sort: not implemented";
 	}
+
+	panel_texts[10].setString(label);
+	cout << label << "\n"; // also logs to the console so you can compare runs
+	ScrollStats(0);        // redraw the visible rows with the new order
 }
 
 
@@ -259,22 +289,22 @@ void StatRow::Update(int ranking_, string username_, int xp_, int wins_, float k
 	else if (ranking_ < 6) { text_color  = Color(0, 191, 99); }
 	else { text_color = Color(166, 166, 166); }
 
-	ranking.setString(to_string(ranking_) + '.'); 
+	ranking.setString(to_string(ranking_) + '.');
 	CenterText(ranking); ranking.setFillColor(text_color);
 
-	username.setString(username_); 
+	username.setString(username_);
 	CenterText(username); username.setFillColor(text_color);
 
-	xp.setString(to_string(xp_)); 
+	xp.setString(to_string(xp_));
 	CenterText(xp); xp.setFillColor(text_color);
 
-	wins.setString(to_string(wins_)); 
+	wins.setString(to_string(wins_));
 	CenterText(wins); wins.setFillColor(text_color);
 
-	kd.setString(format("{:.2f}", kd_)); 
+	kd.setString(format("{:.2f}", kd_));
 	CenterText(kd); kd.setFillColor(text_color);
 }
-void  StatRow::CenterText(Text& text) {
+void StatRow::CenterText(Text& text) {
 	FloatRect rect = text.getLocalBounds();
-	text.setOrigin(rect.size / 2.f);
+	text.setOrigin(rect.position + rect.size / 2.f);
 }

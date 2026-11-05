@@ -3,7 +3,7 @@
 
 int main() {
 	RenderWindow window(VideoMode::getDesktopMode(), "LeaderSort", State::Fullscreen);
-	LeaderSortUI UI(window.getDefaultView().getCenter(), Texture("../../../assets/panel.png"), Font("../../../assets/pixeloid.ttf"));
+	LeaderSortUI UI(window.getDefaultView().getCenter(), Texture("../assets/panel.png"), Font("../assets/pixeloid.ttf"));
 
 
 	// Class from other file created (could be passed into UI class)

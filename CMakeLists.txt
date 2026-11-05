@@ -19,6 +19,10 @@ add_executable(LeaderSort
     "main.cpp"
     "LeaderSortUI.cpp"
     "LeaderSortUI.h"
+        ../LeaderSort2/algorithms.cpp
+        ../LeaderSort2/algorithms.h
+        algorithms.h
+        algorithms.cpp
 )
 
 target_link_libraries(LeaderSort PRIVATE 
