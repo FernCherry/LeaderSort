@@ -31,3 +31,56 @@ void mergeSort(vector<PlayerStats*>& a, int key) {
     while (i < left.size())  a[k++] = left[i++];
     while (j < right.size()) a[k++] = right[j++];
 }
+
+void quicksort(vector<PlayerStats*>& a, int key) {
+    quicksortHelper(a,0,a.size() -1, key);
+}
+
+void quicksortHelper(vector<PlayerStats*>& a,int low, int high, int key)
+{
+    if (low < high) {
+        //selecting pivot
+        PlayerStats* pivot = a[low];
+        int up = low;
+        int down = high;
+        int pivotPosition;
+
+        //moving pivot
+        while (up < down) {
+            for (int i = up; i < high; i++) {
+                if (compareValues(pivot,a[up],key)) {
+                    break;
+                }
+                up++;
+            }
+            for (int i = high; i > low; i--) {
+                if(compareValues(a[down],pivot,key)) {
+                    break;
+                }
+                down--;
+            }
+            if (up < down) {
+                PlayerStats* player = a[up];
+                a[up] = a[down];
+                a[down] = player;
+            }
+
+        }
+        PlayerStats* player = a[low];
+        a[low] = a[down];
+        a[down] = player;
+        pivotPosition = down;
+
+        quicksortHelper(a, low, pivotPosition-1, key);
+        quicksortHelper(a, pivotPosition+1, high, key);
+    }
+}
+
+bool compareValues(PlayerStats* a, PlayerStats* b, int key) {
+    switch (key) {
+        case 1:  return a->xp > b->xp;
+        case 2:  return a->wins > b->wins;
+        case 3:  return a->kd > b->kd;
+        case 4:  return a->username > b->username;
+    }
+}
