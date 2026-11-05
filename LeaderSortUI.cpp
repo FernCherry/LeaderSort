@@ -254,8 +254,17 @@ void LeaderSortUI::Refresh() {
 		label = format("Merge sort: {:.2f} ms\nXP {:.2f} | Wins {:.2f} | KD {:.2f}",
 			ms(t0, t3), ms(t0, t1), ms(t1, t2), ms(t2, t3));
 	}
-	else { // quick_sort: not implemented yet
-		label = "Quick sort: not implemented";
+	else { // quick_sort
+		auto t0 = clock::now();
+		quicksort(xp_sorted, 1);
+		auto t1 = clock::now();
+		quicksort(wins_sorted, 2);
+		auto t2 = clock::now();
+		quicksort(kd_sorted, 3);
+		auto t3 = clock::now();
+
+		label = format("Quick sort: {:.2f} ms\nXP {:.2f} | Wins {:.2f} | KD {:.2f}",
+			ms(t0, t3), ms(t0, t1), ms(t1, t2), ms(t2, t3));
 	}
 
 	panel_texts[10].setString(label);
