@@ -1,4 +1,4 @@
-﻿cmake_minimum_required(VERSION 3.27)
+cmake_minimum_required(VERSION 3.27)
 project("LeaderSort")
 
 set(CMAKE_CXX_STANDARD 20)
@@ -6,7 +6,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 include(FetchContent)
 
-FetchContent_Declare(SFML
+FetchContent_Declare(
+    SFML
     GIT_REPOSITORY https://github.com/SFML/SFML.git
     GIT_TAG 3.1.0
     GIT_SHALLOW ON
@@ -16,14 +17,10 @@ FetchContent_Declare(SFML
 FetchContent_MakeAvailable(SFML)
 
 add_executable(LeaderSort
-    "main.cpp"
-    "LeaderSortUI.cpp"
-    "LeaderSortUI.h"
-        ../LeaderSort2/algorithms.cpp
-        ../LeaderSort2/algorithms.h
-        algorithms.h
-        algorithms.cpp
-)
+    "src/main.cpp"
+    "src/LeaderSortUI.cpp"
+    "src/algorithms.cpp"
+ )
 
 target_link_libraries(LeaderSort PRIVATE 
     SFML::Graphics 
