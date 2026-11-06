@@ -37,12 +37,15 @@ void quicksortHelper(vector<PlayerStats*>& a,int low, int high, int key)
 {
     if (low < high) {
         //selecting pivot
+        int pivotPosition = low + rand() % (high - low + 1);
+        PlayerStats* temp = a[low];
+        a[low] = a[pivotPosition];
+        a[pivotPosition] = temp;
+
         PlayerStats* pivot = a[low];
         int up = low;
         int down = high;
-        int pivotPosition;
 
-        //moving pivot
         while (up < down) {
             for (int i = up; i < high; i++) {
                 if (compareValues(pivot,a[up],key)) {
