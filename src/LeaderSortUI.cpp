@@ -1,4 +1,9 @@
 ﻿#include "LeaderSortUI.h"
+#include <vector>
+#include "json.hpp"
+#include <fstream>
+
+using json = nlohmann::json;
 
 void LeaderSortUI::Render(RenderWindow& window) {
 	window.draw(panel);
@@ -176,10 +181,18 @@ LeaderSortUI::LeaderSortUI(Vector2f panel_center_, Texture elements_texture_, Fo
 	selected_stat = 0;
 	scroll_offset = 0;
 	
-	// DATABASE // DATABASE // DATABASE 
-	database.reserve(10000); // required: a reallocation would invalidate every pointer
-	for (int i = 0; i < 10000; i++) {
-		database.push_back(PlayerStats(i + 1));
+	// DATABASE // DATABASE // DATABASE
+	database.reserve(120000);
+	// required: a reallocation would invalidate every pointer
+
+	std::ifstream file("../assets/players.json");
+
+	json jsonfile;
+	file >> jsonfile;
+
+	for (const auto& players: jsonfile) {
+		PlayerStats player = PlayerStats(players["username"],players["xp"],players["kd"],players["wins"]);
+		database.push_back(player);
 	}
 	for (PlayerStats& p : database) {
 		xp_sorted.push_back(&p);
