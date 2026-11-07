@@ -20,7 +20,6 @@ add_executable(LeaderSort
     "src/main.cpp"
     "src/LeaderSortUI.cpp"
     "src/algorithms.cpp"
-    "src/GenerateDataBase.cpp"
  )
 
 target_link_libraries(LeaderSort PRIVATE 
