@@ -12,10 +12,8 @@ struct PlayerStats {
 	int wins;
 	float kd;
 
-	PlayerStats(int random_number) {
-		username = "default_name" + to_string(random_number);
-		wins = kd = 0;
-		xp = (random_number * 37 + 11) % 100; // cool hash
+	PlayerStats(string username_, int xp_, float kd_, int wins_) {
+		username = username_; xp = xp_; kd = kd_; wins = wins_;
 	}
 };
 
