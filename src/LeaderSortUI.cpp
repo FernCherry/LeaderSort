@@ -188,7 +188,7 @@ LeaderSortUI::LeaderSortUI(Vector2f panel_center_, Texture elements_texture_, Fo
 	database.reserve(120000);
 	// required: a reallocation would invalidate every pointer
 
-	std::ifstream file("assets/players.json");
+	std::ifstream file("../assets/players.json");
 
 	json jsonfile;
 	file >> jsonfile;
