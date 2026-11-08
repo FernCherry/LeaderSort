@@ -5,7 +5,7 @@ int main() {
 	window.setFramerateLimit(120);
 	
 	bool vs_build = false; // true: visual studio build, false: regular build 
-	string panel_path = "../assets/panel.png"; string font_path = "../assets/pixeloid.ttf";
+	string panel_path = "assets/panel.png"; string font_path = "assets/pixeloid.ttf";
 	if (vs_build) { panel_path = "../../../assets/panel.png"; font_path = "../../../assets/pixeloid.ttf"; }
 
 	LeaderSortUI UI(window.getDefaultView().getCenter(), Texture(panel_path), Font(font_path));
