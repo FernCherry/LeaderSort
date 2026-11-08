@@ -102,7 +102,10 @@ void LeaderSortUI::Update(Vector2i mouse_position, bool clicked, int scroll_delt
 
 	static float dynamic_timer = 0.f;
 	if (dynamic_stats and (dynamic_timer += delta_time) >= .001f) { // changes random player stats as if they are playing in real time, it could show up after refresh
-		DynamicUpdate(database[rand() % database.size()]); dynamic_timer = 0.f;
+		for (int i = 0; i < 100; i++) {
+			DynamicUpdate(database[rand() % database.size()]); 
+		}
+		dynamic_timer = 0.f;
 	}
 }
 void LeaderSortUI::DynamicUpdate(PlayerStats& player_stats) {
