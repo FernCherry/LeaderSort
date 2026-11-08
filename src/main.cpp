@@ -2,7 +2,8 @@
 
 int main() {
 	RenderWindow window(VideoMode::getDesktopMode(), "LeaderSort", State::Fullscreen);
-
+	window.setFramerateLimit(120);
+	
 	bool vs_build = false; // true: visual studio build, false: regular build 
 	string panel_path = "assets/panel.png"; string font_path = "assets/pixeloid.ttf";
 	if (vs_build) { panel_path = "../../../assets/panel.png"; font_path = "../../../assets/pixeloid.ttf"; }
